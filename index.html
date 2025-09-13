@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Échéancier - Gestion</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Échéancier</h1>
+  </header>
+
+  <main class="container">
+
+    <!-- CONNEXION -->
+    <section id="login-screen" class="screen active">
+      <h2>CONNEXION</h2>
+      <div class="card">
+        <label>Téléphone ou Email</label>
+        <input id="login-username" type="text" placeholder="Téléphone ou Email" />
+        <label>Mot de passe</label>
+        <input id="login-password" type="password" placeholder="Mot de passe" />
+        <div class="actions">
+          <button id="login-btn" onclick="login()">Se connecter</button>
+          <button class="secondary" onclick="showScreen('choix-process-screen')">Connexion test</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- CHOIX PROCESS -->
+    <section id="choix-process-screen" class="screen">
+      <h2>CHOIX PROCESS</h2>
+      <div class="card grid-3">
+        <button onclick="showScreen('new-dossier-1-screen')">Nouveau dossier</button>
+        <button onclick="showScreen('search-screen')">Recherche dossier</button>
+        <button onclick="showScreen('etat-dossier-screen')">Etat dossier</button>
+      </div>
+    </section>
+
+    <!-- NOUVEAU DOSSIER (1/3) -->
+    <section id="new-dossier-1-screen" class="screen">
+      <h2>NOUVEAU DOSSIER (1/3)</h2>
+      <div class="card form">
+        <label>Code dossier</label>
+        <input id="nd-code" type="text" />
+
+        <label>Libellé / Client</label>
+        <input id="nd-client" type="text" />
+
+        <label>Montant global dû</label>
+        <input id="nd-montant-global" type="number" min="0" step="0.01" />
+
+        <label>Périodicité</label>
+        <select id="nd-periodicite">
+          <option value="mensuelle">Mensuelle</option>
+          <option value="hebdomadaire">Hebdomadaire</option>
+          <option value="trimestrielle">Trimestrielle</option>
+          <option value="annuelle">Annuelle</option>
+        </select>
+
+        <label>Contacts Client</label>
+        <input id="nd-contacts" type="text" placeholder="Téléphone / Email" />
+
+        <div class="actions">
+          <button onclick="toStep2()">Suivant (2/3)</button>
+          <button class="secondary" onclick="showScreen('choix-process-screen')">Annuler</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- NOUVEAU DOSSIER (2/3) -->
+    <section id="new-dossier-2-screen" class="screen">
+      <h2>NOUVEAU DOSSIER (2/3)</h2>
+      <div class="card form">
+        <label>Nb différés</label>
+        <input id="nd-nb-differes" type="number" min="0" value="0" />
+
+        <label>Nb échéances</label>
+        <input id="nd-nb-echeances" type="number" min="1" value="1" />
+
+        <label>Montant échéance (optionnel, sinon calculé automatiquement)</label>
+        <input id="nd-montant-echeance" type="number" min="0" step="0.01" placeholder="laisser vide pour calcul automatique" />
+
+        <label>Date 1 ère  échéance</label>
+        <input id="nd-date-premiere" type="date" />
+
+        <div class="actions">
+          <button onclick="toStep1()">Précédent (1/3)</button>
+          <button onclick="toStep3()">Suivant (3/3)</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- NOUVEAU DOSSIER (3/3) -->
+    <section id="new-dossier-3-screen" class="screen">
+      <h2>NOUVEAU DOSSIER (3/3)</h2>
+      <div class="card">
+        <h3>Échéancier du Client <span id="preview-client-name"></span></h3>
+        <div id="preview-echeancier"></div>
+        <div class="actions">
+          <button onclick="toStep2()">Précédent (2/3)</button>
+          <button onclick="saveDossier()">ENREGISTRER</button>
+          <button class="secondary" onclick="showScreen('choix-process-screen')">Annuler</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- RECHERCHE MULTI-C -->
+    <section id="search-screen" class="screen">
+      <h2>RECHERCHE MULTI-C</h2>
+      <div class="card form">
+        <label>Code dossier</label>
+        <input id="search-code" type="text" />
+
+        <label>Client</label>
+        <input id="search-client" type="text" />
+
+        <label>Montant payé entre</label>
+        <div class="inline">
+          <input id="search-montant-paye-min" type="number" placeholder="min" />
+          <input id="search-montant-paye-max" type="number" placeholder="max" />
+        </div>
+
+        <label>Montant dû entre</label>
+        <div class="inline">
+          <input id="search-montant-due-min" type="number" placeholder="min" />
+          <input id="search-montant-due-max" type="number" placeholder="max" />
+        </div>
+
+        <label>Date entre</label>
+        <div class="inline">
+          <input id="search-date-min" type="date" />
+          <input id="search-date-max" type="date" />
+        </div>
+
+        <div class="actions">
+          <button onclick="searchDossiers()">RECHERCHER</button>
+          <button class="secondary" onclick="resetSearch()">Réinitialiser</button>
+          <button class="secondary" onclick="showScreen('choix-process-screen')">Retour</button>
+        </div>
+      </div>
+
+      <div id="search-results" class="card results">
+        <h3>RESULTAT RECHERCHE</h3>
+        <div id="search-results-list"></div>
+      </div>
+    </section>
+
+    <!-- BIENVENUE / Dashboard -->
+    <section id="home-screen" class="screen">
+      <h2>BIENVENUE</h2>
+      <div class="card stats">
+        <div class="stat"><div class="big" id="stat-retard">0</div><div>ECHEANCES EN RETARD</div></div>
+        <div class="stat"><div class="big" id="stat-attente">0</div><div>ECHEANCES EN ATTENTE</div></div>
+        <div class="stat"><div class="big" id="stat-reglees">0</div><div>ECHEANCES REGLEES</div></div>
+        <div class="stat"><div class="big" id="stat-avance">0</div><div>ECHEANCES EN AVANCE</div></div>
+      </div>
+
+      <div class="card">
+        <h3>Actions</h3>
+        <div class="actions">
+          <button onclick="showScreen('new-dossier-1-screen')">Nouveau dossier</button>
+          <button class="secondary" onclick="showScreen('search-screen')">Recherche dossier</button>
+          <button onclick="showScreen('etat-dossier-screen')">Etat dossier</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ETAT DOSSIER -->
+    <section id="etat-dossier-screen" class="screen">
+      <h2>ETAT DOSSIER</h2>
+      <div class="card">
+        <h3>Tableau des états</h3>
+        <ul>
+          <li>ECHEANCES EN RETARD: <span id="etat-retard">0</span></li>
+          <li>ECHEANCES EN ATTENTE: <span id="etat-attente">0</span></li>
+          <li>ECHEANCES REGLEES: <span id="etat-reglees">0</span></li>
+          <li>ECHEANCES EN AVANCE: <span id="etat-avance">0</span></li>
+        </ul>
+        <div id="etat-list"></div>
+        <div class="actions">
+          <button class="secondary" onclick="showScreen('home-screen')">Retour</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- DETAIL ECHEANCE -->
+    <section id="detail-echeance-screen" class="screen">
+      <h2>DETAIL ECHEANCE</h2>
+      <div class="card">
+        <p><strong>Date échéance :</strong> <span id="detail-date"></span></p>
+        <p><strong>Client :</strong> <span id="detail-client"></span></p>
+        <p><strong>Montant dû :</strong> <span id="detail-montant-due"></span></p>
+        <p><strong>Montant payé :</strong> <span id="detail-montant-paye"></span></p>
+        <p><strong>Statut :</strong> <span id="detail-statut"></span></p>
+
+        <h4>Enregistrer paiement</h4>
+        <label>Montant payé</label>
+        <input id="pay-amount" type="number" step="0.01" />
+        <label>Date paiement</label>
+        <input id="pay-date" type="date" />
+        <div class="actions">
+          <button onclick="enregistrerPaiement()">ENREGISTRER</button>
+          <button class="secondary" onclick="showScreen('home-screen')">Retour</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="nav-tabs">
+    <button onclick="showScreen('choix-process-screen')">CHOIX PROCESS</button>
+    <button onclick="showScreen('new-dossier-1-screen')">NOUVEAU</button>
+    <button onclick="showScreen('search-screen')">RECHERCHE</button>
+    <button onclick="showScreen('etat-dossier-screen')">ETAT</button>
+    <button onclick="showScreen('home-screen')">BIENVENUE</button>
+  </footer>
+
+  <!-- JS -->
+  <script src="main.js"></script>
+  <script src="auth.js"></script>
+  <script src="echeancier.js"></script>
+  <script src="dossier.js"></script>
+  <script src="search.js"></script>
+  <script src="etat.js"></script>
+</body>
+    <!-- C1 - ÉCHÉANCES EN RETARD -->
+    <section id="c1-screen" class="screen">
+      <h2>ÉCHÉANCES EN RETARD</h2>
+      <div class="card">
+        <div id="c1-list"></div>
+        <div class="actions">
+          <button class="secondary" onclick="showScreen('etat-dossier-screen')">Retour</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- C2 - ÉCHÉANCES EN ATTENTE -->
+    <section id="c2-screen" class="screen">
+      <h2>ÉCHÉANCES EN ATTENTE</h2>
+      <div class="card">
+        <div id="c2-list"></div>
+        <div class="actions">
+          <button class="secondary" onclick="showScreen('etat-dossier-screen')">Retour</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- C3 - ÉCHÉANCES RÉGLÉES -->
+    <section id="c3-screen" class="screen">
+      <h2>ÉCHÉANCES RÉGLÉES</h2>
+      <div class="card">
+        <div id="c3-list"></div>
+        <div class="actions">
+          <button class="secondary" onclick="showScreen('etat-dossier-screen')">Retour</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- C4 - ÉCHÉANCES EN AVANCE -->
+    <section id="c4-screen" class="screen">
+      <h2>ÉCHÉANCES EN AVANCE</h2>
+      <div class="card">
+        <div id="c4-list"></div>
+        <div class="actions">
+          <button class="secondary" onclick="showScreen('etat-dossier-screen')">Retour</button>
+        </div>
+      </div>
+    </section>
+</html>
